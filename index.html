@@ -179,55 +179,52 @@
         }
 
         // ============================================================
-        // 2. 动态加载 Coze SDK
+        // 2. 动态加载 Coze SDK 并初始化
         // ============================================================
-        function loadCozeSDK(callback) {
-            var script = document.createElement('script');
-            script.src = 'https://lf-cdn.coze.cn/obj/univer-cn/coze-sdk/v1.1.0/chat-sdk.min.js';
-            script.onload = callback;
-            script.onerror = function () {
-                console.error('Coze SDK 加载失败，5 秒后重试...');
-                setTimeout(function () {
-                    loadCozeSDK(callback);
-                }, 5000);
+        function initCozeChat() {
+            const container = document.getElementById('coze-chat-container');
+            if (!container) {
+                console.error('❌ 找不到 coze-chat-container 容器');
+                return;
+            }
+
+            const script = document.createElement('script');
+            // 备用CDN地址：sf-cdn.coze.cn
+            script.src = 'https://sf-cdn.coze.cn/obj/univer-cn/coze-sdk/v1.1.0/chat-sdk.min.js';
+            
+            script.onload = function() {
+                try {
+                    new CozeChatSDK.Chat({
+                        botId: '7634906073757319183',
+                        title: 'AI 聊天助手',
+                        container: container,
+                        layout: 'pc',
+                        width: '100%',
+                        login: false,
+                    });
+                    console.log('✅ AI 聊天已成功启动');
+                } catch (error) {
+                    console.error('❌ Coze 初始化失败：', error);
+                    document.getElementById('coze-chat-container').innerHTML = 
+                        '<p style="color:white;text-align:center;padding-top:200px;">聊天组件加载失败，请刷新页面重试</p>';
+                }
             };
+
+            script.onerror = function() {
+                console.error('❌ Coze SDK 加载失败，请检查网络');
+                document.getElementById('coze-chat-container').innerHTML = 
+                    '<p style="color:white;text-align:center;padding-top:200px;">聊天服务暂时加载失败，请稍后刷新重试</p>';
+            };
+
             document.head.appendChild(script);
         }
 
         // ============================================================
-        // 3. 初始化 Coze 聊天窗口
+        // 3. 页面加载完成后启动
         // ============================================================
-        function initCozeChat() {
-            if (typeof CozeChatSDK === 'undefined') {
-                console.warn('CozeChatSDK 未定义，重新加载...');
-                loadCozeSDK(initCozeChat);
-                return;
-            }
-
-            try {
-                new CozeChatSDK.Chat({
-                    botId: '7634906073757319183',
-                    title: 'AI 聊天助手',
-                    container: document.getElementById('coze-chat-container'),
-                    layout: 'pc',
-                    width: '100%',
-                    login: false
-                });
-                console.log('%c🤖 Coze 聊天窗口初始化成功', 'color: #4a9eff; font-size: 14px; font-weight: bold;');
-            } catch (error) {
-                console.error('Coze 聊天窗口初始化失败:', error);
-            }
-        }
-
-        // ============================================================
-        // 4. 页面加载完成后启动
-        // ============================================================
-        window.addEventListener('load', function () {
-            // 创建星空
+        window.addEventListener('load', function() {
             createStars();
-
-            // 加载 Coze SDK 并初始化
-            loadCozeSDK(initCozeChat);
+            initCozeChat();
         });
     </script>
 
