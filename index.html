@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 聊天 - 徐勇</title>
+    <!-- Coze 聊天 SDK -->
+    <script src="https://lf-cdn.coze.cn/obj/univer-cn/coze-sdk/v1.1.0/chat-sdk.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
@@ -528,6 +530,9 @@
         </div>
     </div>
 
+    <!-- Coze 聊天容器 -->
+    <div id="coze-chat-container"></div>
+
     <script>
         // ============================================================
         // 安全架构说明
@@ -890,11 +895,34 @@
             sendButton.disabled = true;
         }
 
+        // 初始化 Coze 聊天 SDK
+        function initCozeChat() {
+            if (typeof CozeChatSDK === 'undefined') {
+                console.warn('Coze SDK 未加载，稍后重试...');
+                setTimeout(initCozeChat, 1000);
+                return;
+            }
+            
+            try {
+                const cozeChat = new CozeChatSDK.Chat({
+                    botId: '7634906073757319183',
+                    layout: 'pc',
+                    login: false,
+                    title: 'AI 聊天助手',
+                    container: document.getElementById('coze-chat-container')
+                });
+                console.log('%c🤖 Coze 聊天 SDK 初始化成功', 'color: #4a9eff; font-size: 14px; font-weight: bold;');
+            } catch (error) {
+                console.error('Coze SDK 初始化失败:', error);
+            }
+        }
+
         // 页面加载完成后初始化
         window.addEventListener('load', () => {
             createStars();
             updateCursorLight();
             initChat();
+            initCozeChat();
             
             console.log('%c🤖 AI 聊天已启动（安全代理模式）', 'color: #4a9eff; font-size: 18px; font-weight: bold;');
             console.log('%cAPI 密钥存储在代理服务器端，前端安全无密钥。', 'color: #66cc88; font-size: 14px;');
