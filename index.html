@@ -620,6 +620,9 @@
             initChat();
             
             // 初始化 Coze 聊天窗口
+            var script = document.createElement('script');
+            script.src = 'https://lf-cdn.coze.cn/obj/univer-cn/coze-sdk/v1.1.0/chat-sdk.min.js';
+            script.onload = function() {
             new CozeChatSDK.Chat({
                 botId: '7634906073757319183',
                 title: 'AI 聊天助手',
