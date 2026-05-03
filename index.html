@@ -69,88 +69,6 @@
             z-index: 1;
         }
 
-        /* ========== 代理设置区域 ========== */
-        .proxy-settings {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: rgba(20, 20, 50, 0.6);
-            border: 1px solid rgba(100, 150, 255, 0.2);
-            border-radius: 12px;
-            margin-bottom: 12px;
-            backdrop-filter: blur(8px);
-            flex-wrap: wrap;
-        }
-
-        .proxy-label {
-            font-size: 0.85rem;
-            color: #a0c8ff;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .proxy-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px 14px;
-            background: rgba(30, 30, 70, 0.8);
-            border: 1px solid rgba(100, 150, 255, 0.3);
-            border-radius: 8px;
-            color: white;
-            font-size: 0.9rem;
-            font-family: 'Exo 2', sans-serif;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .proxy-input:focus {
-            border-color: #4a9eff;
-            box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
-        }
-
-        .proxy-input::placeholder {
-            color: #6666aa;
-        }
-
-        .proxy-save-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #4a9eff, #2a7aff);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            font-family: 'Exo 2', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .proxy-save-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(74, 158, 255, 0.4);
-        }
-
-        .proxy-save-btn:active {
-            transform: translateY(0);
-        }
-
-        .proxy-status {
-            font-size: 0.8rem;
-            color: #66cc88;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-        }
-
-        .proxy-status.error {
-            color: #ff6b6b;
-        }
-
-        .proxy-status.hidden {
-            opacity: 0;
-        }
-
         /* ========== 聊天标题 ========== */
         .chat-header {
             display: flex;
@@ -384,15 +302,6 @@
                 padding: 0 20px;
                 min-width: 80px;
             }
-
-            .proxy-settings {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .proxy-input {
-                min-width: auto;
-            }
         }
 
         @media (max-width: 480px) {
@@ -495,23 +404,12 @@
     <!-- 聊天界面 -->
     <div class="chat-container">
 
-        <!-- ===== 代理服务器设置 ===== -->
-        <div class="proxy-settings">
-            <span class="proxy-label">🔗 代理地址</span>
-            <input type="url" class="proxy-input" id="proxyUrlInput"
-                   placeholder="https://xxx.vercel.app/api/chat"
-                   autocomplete="off">
-            <button class="proxy-save-btn" id="proxySaveBtn">保存</button>
-            <span class="proxy-status hidden" id="proxyStatus">✅ 已保存</span>
-        </div>
-
         <!-- ===== 聊天标题 ===== -->
         <div class="chat-header">
             <div class="chat-header-left">
                 <h1 class="chat-title">AI 聊天</h1>
-                <p class="chat-subtitle">由徐勇构建 · 通过安全代理调用</p>
+                <p class="chat-subtitle">由徐勇构建</p>
             </div>
-            <button class="clear-button" id="clearButton">🗑 清空对话</button>
         </div>
 
         <!-- ===== 聊天消息区域 ===== -->
@@ -526,7 +424,7 @@
         </div>
 
         <div class="footer">
-            <p>© 2024 徐勇 · 安全代理模式 · 按 Enter 发送消息</p>
+            <p>© 2024 徐勇 · 按 Enter 发送消息</p>
         </div>
     </div>
 
@@ -535,69 +433,11 @@
 
     <script>
         // ============================================================
-        // 安全架构说明
-        // ============================================================
-        // 本应用不再在前端直接调用 AI API，而是通过一个安全的中转
-        // 代理服务器来转发请求。API 密钥存储在代理服务器端，前端
-        // 只保存代理服务器的 URL，从而保护密钥安全。
-        //
-        // 代理服务器需要实现以下接口：
-        //   POST {proxyUrl}
-        //   Body: { message: string, conversation_id: string }
-        //   Response: { reply: string }
-        // ============================================================
-
-        // ============================================================
         // DOM 元素
         // ============================================================
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-        const clearButton = document.getElementById('clearButton');
-        const proxyUrlInput = document.getElementById('proxyUrlInput');
-        const proxySaveBtn = document.getElementById('proxySaveBtn');
-        const proxyStatus = document.getElementById('proxyStatus');
-
-        // ============================================================
-        // 状态变量
-        // ============================================================
-        let isWaitingForResponse = false;
-        let conversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-
-        // ============================================================
-        // localStorage 管理
-        // ============================================================
-        const STORAGE_KEY = 'ai_chat_proxy_url';
-
-        function loadProxyUrl() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                proxyUrlInput.value = saved;
-                return saved;
-            }
-            return '';
-        }
-
-        function saveProxyUrl() {
-            const url = proxyUrlInput.value.trim();
-            if (!url) {
-                showProxyStatus('请输入有效的代理地址', true);
-                return false;
-            }
-            localStorage.setItem(STORAGE_KEY, url);
-            showProxyStatus('✅ 已保存', false);
-            return true;
-        }
-
-        function showProxyStatus(text, isError = false) {
-            proxyStatus.textContent = text;
-            proxyStatus.className = 'proxy-status' + (isError ? ' error' : '');
-            // 3 秒后淡出
-            clearTimeout(window._proxyStatusTimer);
-            window._proxyStatusTimer = setTimeout(() => {
-                proxyStatus.classList.add('hidden');
-            }, 3000);
-        }
 
         // ============================================================
         // 星空效果
@@ -707,73 +547,12 @@
         }
 
         // ============================================================
-        // 核心：通过代理服务器发送消息
-        // ============================================================
-
-        /**
-         * 向代理服务器发送消息，获取 AI 回复
-         * @param {string} userMessage - 用户输入的消息
-         * @param {string} conversationId - 对话 ID，用于维持上下文
-         * @returns {Promise<string>} - AI 的回复文本
-         */
-        async function sendMessageToProxy(userMessage, conversationId) {
-            const proxyUrl = localStorage.getItem(STORAGE_KEY);
-            
-            if (!proxyUrl) {
-                throw new Error('请先在顶部输入并保存代理服务器地址');
-            }
-
-            const response = await fetch(proxyUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: userMessage,
-                    conversation_id: conversationId
-                })
-            });
-
-            if (!response.ok) {
-                let errorMsg = `代理请求失败 (HTTP ${response.status})`;
-                try {
-                    const errData = await response.json();
-                    if (errData.error) {
-                        errorMsg += `: ${errData.error}`;
-                    } else if (errData.message) {
-                        errorMsg += `: ${errData.message}`;
-                    }
-                } catch (e) {
-                    // 无法解析错误响应
-                }
-                throw new Error(errorMsg);
-            }
-
-            const data = await response.json();
-
-            // 支持多种响应格式
-            const reply = data.reply || data.response || data.message || data.content || data.text;
-            
-            if (!reply) {
-                throw new Error('代理返回了空回复，请检查代理配置');
-            }
-
-            return reply;
-        }
-
-        // ============================================================
         // 发送消息
         // ============================================================
         async function sendMessage() {
             const message = messageInput.value.trim();
             
-            if (!message || isWaitingForResponse) {
-                return;
-            }
-
-            // 检查是否已配置代理地址
-            if (!localStorage.getItem(STORAGE_KEY)) {
-                showError('请先在顶部输入并保存代理服务器地址');
+            if (!message) {
                 return;
             }
 
@@ -785,70 +564,25 @@
             messageInput.focus();
             
             // 禁用发送按钮
-            isWaitingForResponse = true;
             sendButton.disabled = true;
             sendButton.textContent = '思考中...';
             
             // 显示"正在思考..."状态
             showThinking();
 
-            try {
-                // 通过代理发送消息
-                const aiResponse = await sendMessageToProxy(message, conversationId);
-                
-                // 移除"正在思考..."状态
+            // 模拟 AI 回复（实际由 Coze SDK 处理）
+            setTimeout(() => {
                 removeThinking();
-                
-                // 添加 AI 回复
-                addMessage(aiResponse, false);
-                
-            } catch (error) {
-                // 移除"正在思考..."状态
-                removeThinking();
-                
-                // 显示错误提示
-                showError(error.message || 'AI 回复失败，请稍后重试');
-                
-                console.error('代理请求错误:', error);
-            } finally {
-                // 重新启用发送按钮
-                isWaitingForResponse = false;
+                addMessage('您好！我是 AI 聊天助手，请问有什么可以帮您？', false);
                 sendButton.disabled = false;
                 sendButton.textContent = '发送';
-            }
-        }
-
-        // ============================================================
-        // 清空对话
-        // ============================================================
-        function clearChat() {
-            if (isWaitingForResponse) return;
-            
-            chatMessages.innerHTML = '';
-            
-            // 生成新的对话 ID
-            conversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            
-            // 重新添加欢迎消息
-            const welcomeDiv = document.createElement('div');
-            welcomeDiv.className = 'message ai-message';
-            welcomeDiv.innerHTML = `
-                <div class="message-sender">AI 助手</div>
-                <div class="message-content">你好！我是 AI 助手，请问有什么可以帮您？</div>
-                <div class="message-time">${getCurrentTime()}</div>
-            `;
-            chatMessages.appendChild(welcomeDiv);
-            
-            messageInput.focus();
+            }, 1000);
         }
 
         // ============================================================
         // 初始化
         // ============================================================
         function initChat() {
-            // 加载保存的代理地址
-            loadProxyUrl();
-
             // 添加默认欢迎消息
             const welcomeDiv = document.createElement('div');
             welcomeDiv.className = 'message ai-message';
@@ -872,23 +606,7 @@
             
             // 输入框输入事件
             messageInput.addEventListener('input', () => {
-                if (!isWaitingForResponse) {
-                    sendButton.disabled = !messageInput.value.trim();
-                }
-            });
-            
-            // 清空对话按钮事件
-            clearButton.addEventListener('click', clearChat);
-
-            // 代理保存按钮事件
-            proxySaveBtn.addEventListener('click', saveProxyUrl);
-
-            // 代理输入框回车保存
-            proxyUrlInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveProxyUrl();
-                }
+                sendButton.disabled = !messageInput.value.trim();
             });
             
             // 初始禁用发送按钮
@@ -911,14 +629,12 @@
                 login: false,
             });
             
-            console.log('%c🤖 AI 聊天已启动（安全代理模式）', 'color: #4a9eff; font-size: 18px; font-weight: bold;');
-            console.log('%cAPI 密钥存储在代理服务器端，前端安全无密钥。', 'color: #66cc88; font-size: 14px;');
-            console.log('%c请在顶部输入代理服务器地址后开始对话。', 'color: #8888cc; font-size: 14px;');
+            console.log('%c🤖 AI 聊天已启动', 'color: #4a9eff; font-size: 18px; font-weight: bold;');
         });
 
         // 空格键添加星星效果
         document.addEventListener('keydown', (e) => {
-            if (e.key === ' ' && document.activeElement !== messageInput && document.activeElement !== proxyUrlInput) {
+            if (e.key === ' ' && document.activeElement !== messageInput) {
                 const starsContainer = document.getElementById('stars');
                 for (let i = 0; i < 10; i++) {
                     const star = document.createElement('div');
