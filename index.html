@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 聊天 - 徐勇</title>
+    <title>AI 聊天 - 徐勇的AI探索</title>
     <style>
+        /* 全局样式与星空背景 */
         * {
             margin: 0;
             padding: 0;
@@ -12,96 +13,152 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a4a 25%, #0c0c3a 50%, #1a1a4a 75%, #0a0a2a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0f1e 0%, #0d1b2a 30%, #1b2838 60%, #0a0f1e 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
             position: relative;
         }
 
-        /* 星空背景 */
-        #stars {
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* 星星容器 */
+        .stars-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            animation: twinkle 3s infinite;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-
-        /* Coze 聊天容器 - 全屏居中 */
-        #coze-chat-container {
-            width: 100%;
-            height: 100vh;
+        /* 主内容区 */
+        .main-content {
             position: relative;
             z-index: 1;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* 标题 */
+        .title {
+            color: #ffffff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(100, 180, 255, 0.5);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        /* Coze 聊天窗口容器 */
+        #coze-chat-container {
+            width: 100%;
+            height: 600px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(50, 120, 200, 0.3), 0 0 80px rgba(30, 80, 160, 0.15);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
-    <!-- 星空背景 -->
-    <div id="stars"></div>
+    <!-- 星空容器 -->
+    <div class="stars-container" id="stars"></div>
 
-    <!-- Coze 聊天容器 -->
-    <div id="coze-chat-container"></div>
+    <!-- 主内容 -->
+    <div class="main-content">
+        <h1 class="title">AI 聊天</h1>
+        <p class="subtitle">由徐勇构建 · 基于 Coze 智能体</p>
+        <!-- Coze 聊天窗口将在这里显示 -->
+        <div id="coze-chat-container"></div>
+    </div>
 
+    <!-- 星空动画脚本 -->
     <script>
-        // ============================================================
-        // 星空效果
-        // ============================================================
         function createStars() {
             const starsContainer = document.getElementById('stars');
             const starCount = 150;
-            
+
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
-                star.classList.add('star');
-                
+                star.className = 'star';
                 const size = Math.random() * 3 + 1;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.top = `${Math.random() * 100}%`;
-                star.style.animationDelay = `${Math.random() * 5}s`;
-                star.style.animationDuration = `${Math.random() * 3 + 2}s`;
-                
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.position = 'absolute';
+                star.style.background = 'white';
+                star.style.borderRadius = '50%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 5 + 's';
+                star.style.animation = 'twinkle ' + (Math.random() * 3 + 2) + 's ease-in-out infinite';
+                star.style.opacity = Math.random() * 0.7 + 0.3;
                 starsContainer.appendChild(star);
             }
         }
 
-        // ============================================================
-        // 初始化
-        // ============================================================
-        window.addEventListener('load', () => {
-            // 创建星空
-            createStars();
-            
-            // 初始化 Coze 聊天窗口
-            new CozeChatSDK.Chat({
-                botId: '7634906073757319183',
-                title: 'AI 聊天助手',
-                container: document.getElementById('coze-chat-container'),
-                layout: 'pc',
-                width: '100%',
-                login: false,
-            });
-            
-            console.log('%c🤖 AI 聊天已启动', 'color: #4a9eff; font-size: 18px; font-weight: bold;');
-        });
+        // 添加闪烁动画样式
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes twinkle {
+                0%, 100% { opacity: 0.3; transform: scale(1); }
+                50% { opacity: 1; transform: scale(1.5); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
     </script>
 
-    <!-- Coze 聊天 SDK -->
+    <!-- Coze SDK 脚本 -->
     <script src="https://lf-cdn.coze.cn/obj/univer-cn/coze-sdk/v1.1.0/chat-sdk.min.js"></script>
+
+    <!-- 初始化 Coze 聊天窗口 -->
+    <script>
+        window.addEventListener('load', function() {
+            createStars();
+
+            // 初始化 Coze 聊天
+            try {
+                new CozeChatSDK.Chat({
+                    botId: '7634906073757319183',
+                    title: 'AI 聊天助手',
+                    container: document.getElementById('coze-chat-container'),
+                    layout: 'pc',
+                    width: '100%',
+                    login: false,
+                });
+                console.log('AI 聊天已成功启动');
+            } catch (error) {
+                console.error('Coze 初始化失败：', error);
+            }
+        });
+    </script>
 </body>
 </html>
